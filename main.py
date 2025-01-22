@@ -34,13 +34,27 @@ goal_state = [[1,2,3],
 very_easy = [[1,2,3],
               [5,0,6],
               [4,7,8]]
+easy = [[1,2,3],
+        [5,0,6],
+        [4,7,8]]
+medium = [[1,2,3],
+          [5,0,6],
+          [4,7,8]]
+hard = [[1,2,3],
+        [5,0,6],
+        [4,7,8]]
+very_hard = [[1,2,3],
+             [5,0,6],
+             [4,7,8]]
 
 def pick_difficulty():
     difficulty = input("Please select the difficulty of the default puzzle: Type a number between 1-5, 1 being very easy and 5 being very hard: ")
+    if(difficulty < 1 or difficulty > 5):
+        print("Please select a valid difficulty.")
+    print("You have selected...")
     if(difficulty == '1'):
-        print("You have selected ...")
+        print("Very easy.")
         return(very_easy)
-
 
 def run_game(puzzle):
     puzzle = np.array(puzzle)
