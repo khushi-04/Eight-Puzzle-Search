@@ -1,11 +1,31 @@
 import numpy as np
 
+goal_state = [[1,2,3],
+              [4,5,6],
+              [7,8,0]]
+very_easy = [[1,2,3],
+              [5,0,6],
+              [4,7,8]]
+easy = [[1,2,3],
+        [5,0,6],
+        [4,7,8]]
+medium = [[1,2,3],
+          [5,0,6],
+          [4,7,8]]
+hard = [[1,2,3],
+        [5,0,6],
+        [4,7,8]]
+very_hard = [[1,2,3],
+             [5,0,6],
+             [4,7,8]]
+
+
 def main():
     mode = input("Welcome to the 8-puzzle solver. Please type your preferred mode: '1' for default puzzle, '2' for custom puzzle" + "\n")    
     
     if mode == "1": 
         # call the function for a default puzzle? idk if this is required but good for testing
-        run_game(pick_difficulty())
+        solver_type(pick_difficulty())
         return
     
     # build-a-bear (but a puzzle)
@@ -26,41 +46,65 @@ def main():
         row_two[i] = int(row_two[i])
         row_three[i] = int(row_three[i])
     puzzle = [row_one, row_two, row_three]
-    run_game(puzzle)
 
-goal_state = [[1,2,3],
-              [4,5,6],
-              [7,8,0]]
-very_easy = [[1,2,3],
-              [5,0,6],
-              [4,7,8]]
-easy = [[1,2,3],
-        [5,0,6],
-        [4,7,8]]
-medium = [[1,2,3],
-          [5,0,6],
-          [4,7,8]]
-hard = [[1,2,3],
-        [5,0,6],
-        [4,7,8]]
-very_hard = [[1,2,3],
-             [5,0,6],
-             [4,7,8]]
+    # now we ask user what kind of algorithm they want and run the game from that function
+    solver_type(puzzle)
 
+
+# allows user to pick difficulty if they selected default puzzles
 def pick_difficulty():
     difficulty = input("Please select the difficulty of the default puzzle: Type a number between 1-5, 1 being very easy and 5 being very hard: ")
-    if(difficulty < 1 or difficulty > 5):
+    while(int(difficulty) < 1 or int(difficulty) > 5):
         print("Please select a valid difficulty.")
+        difficulty = input("Please select the difficulty of the default puzzle: Type a number between 1-5, 1 being very easy and 5 being very hard: ")
     print("You have selected...")
     if(difficulty == '1'):
         print("Very easy.")
         return(very_easy)
+    elif(difficulty == '2'):
+        print("Easy.")
+        return(easy)
+    elif(difficulty == '3'):
+        print("Medium.")
+        return(medium)
+    elif(difficulty == '4'):
+        print("Hard.")
+        return(hard)
+    else:
+        print("Very hard.")
+        return(very_hard)
 
-def run_game(puzzle):
-    puzzle = np.array(puzzle)
-    print("Let's begin solving! Here is your starting puzzle: ")
-    print(puzzle)
 
+# asks user for the algorithm they want the program to use
+def solver_type(puzzle):
+    type = input("Which algorithm would you like me to use? (1) for Uniform Cost Search, (2) for Misplaced Tile Heuristic, (3) for Manhattan Distance Heuristic")
+    if(type == "1"):
+        run_game(puzzle, 0)
+    elif(type == "2"):
+        run_game(puzzle, get_hueristic(puzzle, 2))
+    elif(type == "3"):
+        run_game(puzzle, get_hueristic(puzzle, 3))
+
+# calculates hueristic for either misplaced or manhattan (specified by type)
+def get_hueristic(puzzle, type):
+    hueristic = 0
+    if(type == 2):
+        for i in range(3):
+            for j in range(3):
+                if( (puzzle[i][j]) and (puzzle[i][j] != goal_state[i][j])):
+                    hueristic += 1
+    if(type == 3):
+        hueristic = 2
+    return hueristic
+
+def run_game(puzzle, hueristic):
+    print("Here is your starting puzzle: ")
+    print_puzzle(puzzle)
+    print(hueristic)
+
+
+def print_puzzle(puzzle):
+    print(np.array(puzzle))
 
 if __name__ == "__main__":
     main()
