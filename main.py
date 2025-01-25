@@ -1,4 +1,7 @@
 import numpy as np
+import hashlib
+# import TreeNode
+repeated_states = set()
 
 goal_state = [[1,2,3],
               [4,5,6],
@@ -89,18 +92,44 @@ def solver_type(puzzle):
 def get_hueristic(puzzle, type):
     hueristic = 0
     if(type == 2):
-        for i in range(3):
-            for j in range(3):
+        for i in range(len(puzzle)):
+            for j in range(len(puzzle)):
                 if( (puzzle[i][j]) and (puzzle[i][j] != goal_state[i][j])):
                     hueristic += 1
     if(type == 3):
-        hueristic = 2
+        for i in range(len(puzzle)):
+            for j in range(len(puzzle)):
+                if(puzzle[i][j]):
+                    x,y = find_actual_pos(goal_state, puzzle[i][j])
+                    hueristic += abs(i - x) + abs(j-y)
     return hueristic
 
+def find_actual_pos(goal_state, num):
+  for i in range(len(goal_state)):
+    for j in range(len(goal_state[i])):
+      if goal_state[i][j] == num:
+        return i, j
+
+def create_hash(puzzle):
+    puzzle_str = str(puzzle)
+    hash = hashlib.sha256(puzzle_str.encode())
+    digit = hash.hexdigest()
+    return(digit)
+
+def state_exists(puzzle):
+    if(create_hash(puzzle) in repeated_states):
+        return True
+    return False
+
 def run_game(puzzle, hueristic):
+
     print("Here is your starting puzzle: ")
     print_puzzle(puzzle)
-    print(hueristic)
+    throw_away = create_hash(puzzle)
+    repeated_states.add(puzzle)
+
+    puzzle_test = puzzle
+    print(state_exists(puzzle_test))
 
 
 def print_puzzle(puzzle):
