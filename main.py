@@ -1,6 +1,8 @@
 import numpy as np
 import hashlib
 # import TreeNode
+from heapq import heapify, heappush, heappop 
+
 repeated_states = set()
 
 goal_state = [[1,2,3],
@@ -125,8 +127,7 @@ def run_game(puzzle, hueristic):
 
     print("Here is your starting puzzle: ")
     print_puzzle(puzzle)
-    throw_away = create_hash(puzzle)
-    repeated_states.add(puzzle)
+    repeated_states.add(create_hash(puzzle))
 
     puzzle_test = puzzle
     print(state_exists(puzzle_test))
