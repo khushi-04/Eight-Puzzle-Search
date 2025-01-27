@@ -36,14 +36,22 @@ class Node():
     def __lt__(self, other):
         return (self.hueristic + self.level) < (other.hueristic + other.level)
     def __repr__(self):
-        return self.value
+        return f"{self.value}"
 
 def main():
     mode = input("Welcome to the 8-puzzle solver. Please type your preferred mode: '1' for default puzzle, '2' for custom puzzle" + "\n")    
     
     if mode == "1": 
         # call the function for a default puzzle? idk if this is required but good for testing
-        solver_type(pick_difficulty())
+        difficulty = pick_difficulty()
+        # now we ask user what kind of algorithm they want and run the game
+        type = input("Which algorithm would you like me to use? (1) for Uniform Cost Search, (2) for Misplaced Tile Heuristic, (3) for Manhattan Distance Heuristic")
+        if(type == "1"):
+            run_game(difficulty, 1)
+        elif(type == "2"):
+            run_game(difficulty, 2)
+        elif(type == "3"):
+            run_game(difficulty, 3)
         return
     
     # build-a-bear (but a puzzle)
@@ -64,10 +72,6 @@ def main():
         row_two[i] = int(row_two[i])
         row_three[i] = int(row_three[i])
     puzzle = [row_one, row_two, row_three]
-
-    # now we ask user what kind of algorithm they want and run the game from that function
-    solver_type(puzzle)
-
 
 # allows user to pick difficulty if they selected default puzzles
 def pick_difficulty():
@@ -91,17 +95,6 @@ def pick_difficulty():
     else:
         print("Very hard.")
         return(very_hard)
-
-
-# asks user for the algorithm they want the program to use
-def solver_type(puzzle):
-    type = input("Which algorithm would you like me to use? (1) for Uniform Cost Search, (2) for Misplaced Tile Heuristic, (3) for Manhattan Distance Heuristic")
-    if(type == "1"):
-        run_game(puzzle, 1)
-    elif(type == "2"):
-        run_game(puzzle, 2)
-    elif(type == "3"):
-        run_game(puzzle, 3)
 
 # calculates hueristic for either misplaced or manhattan (specified by type)
 def get_hueristic(puzzle, type):
@@ -132,7 +125,7 @@ def create_hash(puzzle):
     return(digit)
 
 def state_exists(puzzle):
-    if(create_hash(puzzle) in repeated_states):
+    if create_hash(puzzle) in repeated_states:
         return True
     return False
 
@@ -146,6 +139,7 @@ def expand_node(current_node):
         left_node[row][column], left_node[row][column-1] = left_node[row][column-1], left_node[row][column]
         if create_hash(left_node) not in repeated_states:
             current_node.board1 = Node(left_node)
+            # repeated_states.add(create_hash(left_node))
 
     # 0 not in very right column
     if column < 2:
@@ -153,6 +147,7 @@ def expand_node(current_node):
         right_node[row][column], right_node[row][column+1] = right_node[row][column+1], right_node[row][column]
         if create_hash(right_node) not in repeated_states:
             current_node.board2 = Node(right_node)
+            # repeated_states.add(create_hash(right_node))
 
     # 0 not in very top row
     if row > 0:
@@ -160,6 +155,7 @@ def expand_node(current_node):
         top_node[row][column], top_node[row-1][column] = top_node[row-1][column], top_node[row][column]
         if create_hash(top_node) not in repeated_states:
             current_node.board3 = Node(top_node)
+            # repeated_states.add(create_hash(top_node))
 
     # 0 not in very bottom row
     if row < 2:
@@ -167,11 +163,13 @@ def expand_node(current_node):
         bottom_node[row][column], bottom_node[row+1][column] = bottom_node[row+1][column], bottom_node[row][column]
         if create_hash(bottom_node) not in repeated_states:
             current_node.board4 = Node(bottom_node)
+            # repeated_states.add(create_hash(bottom_node))
 
 def general_search(puzzle, hueristic, type):
     node = Node(puzzle)
     node.level = 0
     node.hueristic = hueristic
+    
 
     game = []
     # heapify(game)
@@ -181,25 +179,20 @@ def general_search(puzzle, hueristic, type):
         if not game:
             print("sadness")
 
-        current_node = heappop(game)
+        current_node = heappop(game)     
 
-        # print(current_node)
-        # print(current_node.value, goal_state)
-        
         if current_node.value == goal_state:
             print("YIPPEE")
+            break
         
-        print(current_node.value)
-
         if not state_exists(current_node.value):
-            repeated_states.add(create_hash(node.value))
+            repeated_states.add(create_hash(current_node.value))            
             expand_node(current_node)
             
-
         boards = [current_node.board1, current_node.board2, current_node.board3, current_node.board4]
         for board in boards:
             if board is not None:
-                new_node = Node(copy.deepcopy(board))
+                new_node = copy.deepcopy(board)
                 new_node.level = current_node.level + 1
                 if type == "uniform":
                     new_node.hueristic = 0
@@ -207,8 +200,8 @@ def general_search(puzzle, hueristic, type):
                     new_node.hueristic = get_hueristic(new_node.value, 2)
                 elif type == "manhattan":
                     new_node.hueristic = get_hueristic(new_node.value, 3)
+                
                 heappush(game, new_node)
-                repeated_states.add(create_hash(new_node.value))
 
 
 
