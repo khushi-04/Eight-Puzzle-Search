@@ -37,13 +37,35 @@ class Node():
         return (self.hueristic + self.level) < (other.hueristic + other.level)
     def __repr__(self):
         return f"{self.value}"
+    
+def print_puzzle(puzzle):
+    print(np.array(puzzle))
 
 def main():
     mode = input("Welcome to the 8-puzzle solver. Please type your preferred mode: '1' for default puzzle, '2' for custom puzzle" + "\n")    
     
     if mode == "1": 
-        # call the function for a default puzzle? idk if this is required but good for testing
-        puzzle = pick_difficulty()        
+        # call the function for a default puzzle? idk if this is required but good for testing 
+        difficulty = input("Please select the difficulty of the default puzzle: Type a number between 1-5, 1 being very easy and 5 being very hard: ")
+        while(int(difficulty) < 1 or int(difficulty) > 5):
+            print("Please select a valid difficulty.")
+            difficulty = input("Please select the difficulty of the default puzzle: Type a number between 1-5, 1 being very easy and 5 being very hard: ")
+        print("You have selected...")
+        if(difficulty == '1'):
+            print("Very easy.")
+            puzzle = very_easy
+        elif(difficulty == '2'):
+            print("Easy.")
+            puzzle = easy
+        elif(difficulty == '3'):
+            print("Medium.")
+            puzzle = medium
+        elif(difficulty == '4'):
+            print("Hard.")
+            puzzle = hard
+        else:
+            print("Very hard.")
+            puzzle = very_hard    
     
     # build-a-bear (but a puzzle)
     else:
@@ -73,28 +95,7 @@ def main():
         run_game(puzzle, 3)
     return
 
-# allows user to pick difficulty if they selected default puzzles
-def pick_difficulty():
-    difficulty = input("Please select the difficulty of the default puzzle: Type a number between 1-5, 1 being very easy and 5 being very hard: ")
-    while(int(difficulty) < 1 or int(difficulty) > 5):
-        print("Please select a valid difficulty.")
-        difficulty = input("Please select the difficulty of the default puzzle: Type a number between 1-5, 1 being very easy and 5 being very hard: ")
-    print("You have selected...")
-    if(difficulty == '1'):
-        print("Very easy.")
-        return(very_easy)
-    elif(difficulty == '2'):
-        print("Easy.")
-        return(easy)
-    elif(difficulty == '3'):
-        print("Medium.")
-        return(medium)
-    elif(difficulty == '4'):
-        print("Hard.")
-        return(hard)
-    else:
-        print("Very hard.")
-        return(very_hard)
+# allows user to pick difficulty if they selected default puzzles    
 
 # calculates hueristic for either misplaced or manhattan (specified by type)
 def get_hueristic(puzzle, type):
@@ -165,14 +166,22 @@ def expand_node(current_node):
             current_node.board4 = Node(bottom_node)
             # repeated_states.add(create_hash(bottom_node))
 
-def general_search(puzzle, hueristic, type):
+def run_game(puzzle, search_type):
+
+    print("Here is your starting puzzle: ")
+    print_puzzle(puzzle)
+
+    if search_type == 1:
+        hueristic = 0
+    elif search_type == 2:
+        hueristic = get_hueristic(puzzle, 2)
+    else:
+        hueristic = get_hueristic(puzzle,3)
+
     node = Node(puzzle)
     node.level = 0
     node.hueristic = hueristic
-    
-
     game = []
-    # heapify(game)
     heappush(game,node)
 
     while game:
@@ -180,7 +189,7 @@ def general_search(puzzle, hueristic, type):
             print("sadness")
 
         current_node = heappop(game)     
-
+        print_puzzle(current_node.value)
         if current_node.value == goal_state:
             print("YIPPEE")
             break
@@ -194,38 +203,15 @@ def general_search(puzzle, hueristic, type):
             if board is not None:
                 new_node = copy.deepcopy(board)
                 new_node.level = current_node.level + 1
-                if type == "uniform":
+                if search_type == 1:
                     new_node.hueristic = 0
-                elif type == "misplaced":
+                elif search_type == 2:
                     new_node.hueristic = get_hueristic(new_node.value, 2)
-                elif type == "manhattan":
+                elif search_type == 3:
                     new_node.hueristic = get_hueristic(new_node.value, 3)
                 
                 heappush(game, new_node)
 
-
-
-def run_game(puzzle, search_type):
-
-    print("Here is your starting puzzle: ")
-    print_puzzle(puzzle)
-
-    if search_type == 1:
-        general_search(puzzle, 0, "uniform")
-    elif search_type == 2:
-        general_search(puzzle, get_hueristic(puzzle, 2), "misplaced")
-    else:
-        general_search(puzzle, get_hueristic(puzzle, 3), "manhattan")
-
-    
-
-    # puzzle_test = puzzle
-    # print(state_exists(puzzle_test))
-
-
-
-def print_puzzle(puzzle):
-    print(np.array(puzzle))
 
 if __name__ == "__main__":
     main()
