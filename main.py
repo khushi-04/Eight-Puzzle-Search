@@ -1,6 +1,6 @@
 import numpy as np
 import hashlib
-# import TreeNode
+import copy
 from heapq import heapify, heappush, heappop 
 
 repeated_states = set()
@@ -24,6 +24,19 @@ very_hard = [[1,2,3],
              [5,0,6],
              [4,7,8]]
 
+class Node(): 
+    def __init__ (self, value):
+        self.value = value
+        self.level = 0
+        self.hueristic = 0
+        self.board1 = None
+        self.board2 = None
+        self.board3 = None
+        self.board4 = None
+    def __lt__(self, other):
+        return (self.hueristic + self.level) < (other.hueristic + other.level)
+    def __repr__(self):
+        return self.value
 
 def main():
     mode = input("Welcome to the 8-puzzle solver. Please type your preferred mode: '1' for default puzzle, '2' for custom puzzle" + "\n")    
@@ -84,11 +97,11 @@ def pick_difficulty():
 def solver_type(puzzle):
     type = input("Which algorithm would you like me to use? (1) for Uniform Cost Search, (2) for Misplaced Tile Heuristic, (3) for Manhattan Distance Heuristic")
     if(type == "1"):
-        run_game(puzzle, 0)
+        run_game(puzzle, 1)
     elif(type == "2"):
-        run_game(puzzle, get_hueristic(puzzle, 2))
+        run_game(puzzle, 2)
     elif(type == "3"):
-        run_game(puzzle, get_hueristic(puzzle, 3))
+        run_game(puzzle, 3)
 
 # calculates hueristic for either misplaced or manhattan (specified by type)
 def get_hueristic(puzzle, type):
@@ -123,14 +136,99 @@ def state_exists(puzzle):
         return True
     return False
 
-def run_game(puzzle, hueristic):
+def expand_node(current_node):
+    row = 0
+    column = 0
+    row, column = find_actual_pos(current_node.value, 0)
+    # 0 not in the very left column
+    if column > 0:
+        left_node = copy.deepcopy(current_node.value)
+        left_node[row][column], left_node[row][column-1] = left_node[row][column-1], left_node[row][column]
+        if create_hash(left_node) not in repeated_states:
+            current_node.board1 = Node(left_node)
+
+    # 0 not in very right column
+    if column < 2:
+        right_node = copy.deepcopy(current_node.value)
+        right_node[row][column], right_node[row][column+1] = right_node[row][column+1], right_node[row][column]
+        if create_hash(right_node) not in repeated_states:
+            current_node.board2 = Node(right_node)
+
+    # 0 not in very top row
+    if row > 0:
+        top_node = copy.deepcopy(current_node.value)
+        top_node[row][column], top_node[row-1][column] = top_node[row-1][column], top_node[row][column]
+        if create_hash(top_node) not in repeated_states:
+            current_node.board3 = Node(top_node)
+
+    # 0 not in very bottom row
+    if row < 2:
+        bottom_node = copy.deepcopy(current_node.value)
+        bottom_node[row][column], bottom_node[row+1][column] = bottom_node[row+1][column], bottom_node[row][column]
+        if create_hash(bottom_node) not in repeated_states:
+            current_node.board4 = Node(bottom_node)
+
+def general_search(puzzle, hueristic, type):
+    node = Node(puzzle)
+    node.level = 0
+    node.hueristic = hueristic
+
+    game = []
+    # heapify(game)
+    heappush(game,node)
+
+    while game:
+        if not game:
+            print("sadness")
+
+        current_node = heappop(game)
+
+        # print(current_node)
+        # print(current_node.value, goal_state)
+        
+        if current_node.value == goal_state:
+            print("YIPPEE")
+        
+        print(current_node.value)
+
+        if not state_exists(current_node.value):
+            repeated_states.add(create_hash(node.value))
+            expand_node(current_node)
+            
+
+        boards = [current_node.board1, current_node.board2, current_node.board3, current_node.board4]
+        for board in boards:
+            if board is not None:
+                new_node = Node(copy.deepcopy(board))
+                new_node.level = current_node.level + 1
+                if type == "uniform":
+                    new_node.hueristic = 0
+                elif type == "misplaced":
+                    new_node.hueristic = get_hueristic(new_node.value, 2)
+                elif type == "manhattan":
+                    new_node.hueristic = get_hueristic(new_node.value, 3)
+                heappush(game, new_node)
+                repeated_states.add(create_hash(new_node.value))
+
+
+
+def run_game(puzzle, search_type):
 
     print("Here is your starting puzzle: ")
     print_puzzle(puzzle)
-    repeated_states.add(create_hash(puzzle))
 
-    puzzle_test = puzzle
-    print(state_exists(puzzle_test))
+    if search_type == 1:
+        general_search(puzzle, 0, "uniform")
+    elif search_type == 2:
+        general_search(puzzle, get_hueristic(puzzle, 2), "misplaced")
+    else:
+        general_search(puzzle, get_hueristic(puzzle, 3), "manhattan")
+
+    
+
+    # puzzle_test = puzzle
+    # print(state_exists(puzzle_test))
+
 
 
 def print_puzzle(puzzle):
@@ -138,3 +236,5 @@ def print_puzzle(puzzle):
 
 if __name__ == "__main__":
     main()
+
+
