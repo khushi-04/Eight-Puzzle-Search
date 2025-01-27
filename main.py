@@ -1,7 +1,7 @@
 import numpy as np
 import hashlib
 import copy
-from heapq import heapify, heappush, heappop 
+from heapq import heappush, heappop 
 
 repeated_states = set()
 
@@ -140,7 +140,6 @@ def expand_node(current_node):
         left_node[row][column], left_node[row][column-1] = left_node[row][column-1], left_node[row][column]
         if create_hash(left_node) not in repeated_states:
             current_node.board1 = Node(left_node)
-            # repeated_states.add(create_hash(left_node))
 
     # 0 not in very right column
     if column < 2:
@@ -148,7 +147,6 @@ def expand_node(current_node):
         right_node[row][column], right_node[row][column+1] = right_node[row][column+1], right_node[row][column]
         if create_hash(right_node) not in repeated_states:
             current_node.board2 = Node(right_node)
-            # repeated_states.add(create_hash(right_node))
 
     # 0 not in very top row
     if row > 0:
@@ -156,7 +154,6 @@ def expand_node(current_node):
         top_node[row][column], top_node[row-1][column] = top_node[row-1][column], top_node[row][column]
         if create_hash(top_node) not in repeated_states:
             current_node.board3 = Node(top_node)
-            # repeated_states.add(create_hash(top_node))
 
     # 0 not in very bottom row
     if row < 2:
@@ -164,7 +161,6 @@ def expand_node(current_node):
         bottom_node[row][column], bottom_node[row+1][column] = bottom_node[row+1][column], bottom_node[row][column]
         if create_hash(bottom_node) not in repeated_states:
             current_node.board4 = Node(bottom_node)
-            # repeated_states.add(create_hash(bottom_node))
 
 def run_game(puzzle, search_type):
 
@@ -187,13 +183,12 @@ def run_game(puzzle, search_type):
     while game:
         if not game:
             print("sadness")
-
-        current_node = heappop(game)     
-        print_puzzle(current_node.value)
+            break
+        current_node = heappop(game)
         if current_node.value == goal_state:
             print("YIPPEE")
             break
-        
+        print_puzzle(current_node.value)
         if not state_exists(current_node.value):
             repeated_states.add(create_hash(current_node.value))            
             expand_node(current_node)
@@ -211,6 +206,7 @@ def run_game(puzzle, search_type):
                     new_node.hueristic = get_hueristic(new_node.value, 3)
                 
                 heappush(game, new_node)
+        
 
 
 if __name__ == "__main__":
