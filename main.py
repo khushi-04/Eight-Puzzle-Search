@@ -43,35 +43,35 @@ def main():
     
     if mode == "1": 
         # call the function for a default puzzle? idk if this is required but good for testing
-        difficulty = pick_difficulty()
-        # now we ask user what kind of algorithm they want and run the game
-        type = input("Which algorithm would you like me to use? (1) for Uniform Cost Search, (2) for Misplaced Tile Heuristic, (3) for Manhattan Distance Heuristic")
-        if(type == "1"):
-            run_game(difficulty, 1)
-        elif(type == "2"):
-            run_game(difficulty, 2)
-        elif(type == "3"):
-            run_game(difficulty, 3)
-        return
+        puzzle = pick_difficulty()        
     
     # build-a-bear (but a puzzle)
-    print("Please enter your puzzle, using 0 to stand for the blank tile! Make sure your puzzle is a valid 8-puzzle (it should have a valid solution).")
-    
-    print("Enter the puzzle by row, seperating the numbers with a space and press enter to submit each row.")
+    else:
+        print("Please enter your puzzle, using 0 to stand for the blank tile! Make sure your puzzle is a valid 8-puzzle (it should have a valid solution).")
+        
+        print("Enter the puzzle by row, seperating the numbers with a space and press enter to submit each row.")
 
-    row_one = input("Enter: \n[][][]\n")
-    row_two = input("Enter:\n " + row_one + "\n[][][]\n")
-    row_three = input("Enter:\n" + row_one + "\n" + row_two + "\n[][][]\n")
+        row_one = input("Enter: \n[][][]\n")
+        row_two = input("Enter:\n " + row_one + "\n[][][]\n")
+        row_three = input("Enter:\n" + row_one + "\n" + row_two + "\n[][][]\n")
 
-    row_one = row_one.split()
-    row_two = row_two.split()
-    row_three = row_three.split()
+        row_one = row_one.split()
+        row_two = row_two.split()
+        row_three = row_three.split()
 
-    for i in range(0, 3):
-        row_one[i] = int(row_one[i])
-        row_two[i] = int(row_two[i])
-        row_three[i] = int(row_three[i])
-    puzzle = [row_one, row_two, row_three]
+        for i in range(0, 3):
+            row_one[i] = int(row_one[i])
+            row_two[i] = int(row_two[i])
+            row_three[i] = int(row_three[i])
+        puzzle = [row_one, row_two, row_three]
+    type = input("Which algorithm would you like me to use? (1) for Uniform Cost Search, (2) for Misplaced Tile Heuristic, (3) for Manhattan Distance Heuristic")
+    if(type == "1"):
+        run_game(puzzle, 1)
+    elif(type == "2"):
+        run_game(puzzle, 2)
+    elif(type == "3"):
+        run_game(puzzle, 3)
+    return
 
 # allows user to pick difficulty if they selected default puzzles
 def pick_difficulty():
