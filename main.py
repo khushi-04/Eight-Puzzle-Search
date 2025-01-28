@@ -2,6 +2,7 @@ import numpy as np
 import hashlib
 import copy
 from heapq import heappush, heappop 
+import time
 
 repeated_states = set()
 
@@ -163,7 +164,7 @@ def expand_node(current_node):
             current_node.board4 = Node(bottom_node)
 
 def run_game(puzzle, search_type):
-
+    begin = time.time()
     print("Here is your starting puzzle: ")
     print_puzzle(puzzle)
 
@@ -174,6 +175,8 @@ def run_game(puzzle, search_type):
     else:
         hueristic = get_hueristic(puzzle,3)
 
+    nodes_expanded = 0
+    max_queue = 0
     node = Node(puzzle)
     node.level = 0
     node.hueristic = hueristic
@@ -184,12 +187,18 @@ def run_game(puzzle, search_type):
         if not game:
             print("sadness")
             break
+        max_queue = max(len(game), max_queue)
         current_node = heappop(game)
         if current_node.value == goal_state:
-            print("YIPPEE")
+            print("YIPPEE! We found a solution to your 8-puzzle. We expanded " 
+                  + str(nodes_expanded) + " nodes. This search took " 
+                  + str(round(time.time() - begin, 3)) 
+                  + " seconds. The max queue length was " 
+                  + str(max_queue) + " nodes")
             break
         print_puzzle(current_node.value)
         if not state_exists(current_node.value):
+            nodes_expanded += 1
             repeated_states.add(create_hash(current_node.value))            
             expand_node(current_node)
             
