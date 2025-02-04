@@ -35,7 +35,7 @@ class Node():
     def __init__ (self, value):
         self.value = value
         self.level = 0
-        self.hueristic = 0
+        self.heuristic = 0
         self.parent = None
         self.board1 = None
         self.board2 = None
@@ -44,7 +44,7 @@ class Node():
     # https://martinheinz.dev/blog/1
     # for custom comparison operator and print operator
     def __lt__(self, other):
-        return (self.hueristic + self.level) < (other.hueristic + other.level)
+        return (self.heuristic + self.level) < (other.heuristic + other.level)
     def __repr__(self):
         return f"{self.value}"
     
@@ -106,23 +106,21 @@ def main():
         run_game(puzzle, 3)
     return
 
-# calculates hueristic for either misplaced or manhattan (specified by type)
-# https://algodaily.com/lessons/what-is-the-manhattan-distance
-# used to find out how to calculate manhattan distance
-def get_hueristic(puzzle, type):
-    hueristic = 0
+# calculates heuristic for either misplaced or manhattan (specified by type)
+def get_heuristic(puzzle, type):
+    heuristic = 0
     if(type == 2):
         for i in range(len(puzzle)):
             for j in range(len(puzzle)):
                 if( (puzzle[i][j]) and (puzzle[i][j] != goal_state[i][j])):
-                    hueristic += 1
+                    heuristic += 1
     if(type == 3):
         for i in range(len(puzzle)):
             for j in range(len(puzzle)):
                 if(puzzle[i][j]):
                     x,y = find_actual_pos(goal_state, puzzle[i][j])
-                    hueristic += abs(i - x) + abs(j-y)
-    return hueristic
+                    heuristic += abs(i - x) + abs(j-y)
+    return heuristic
 
 # used to find the row and column position of the number in the goal state (used for distances)
 def find_actual_pos(goal_state, num):
@@ -147,8 +145,6 @@ def state_exists(puzzle):
 # custom expand function that adds all possible child nodes (all the possible ways empty tile could move)
 # https://www.geeksforgeeks.org/copy-python-deep-copy-shallow-copy/
 # used deep copy function to create the children
-# https://www.geeksforgeeks.org/python-program-to-swap-two-elements-in-a-list/
-# used reference for syntax of swapping two values
 def expand_node(current_node):
     row = 0
     column = 0
@@ -192,18 +188,18 @@ def run_game(puzzle, search_type):
     
     # getting the search type
     if search_type == 1:
-        hueristic = 0
+        heuristic = 0
     elif search_type == 2:
-        hueristic = get_hueristic(puzzle, 2)
+        heuristic = get_heuristic(puzzle, 2)
     else:
-        hueristic = get_hueristic(puzzle,3)
+        heuristic = get_heuristic(puzzle,3)
 
     # declaring variables, most of which are needed at the end
     nodes_expanded = 0
     max_queue = 0
     node = Node(puzzle)
     node.level = 0
-    node.hueristic = hueristic
+    node.heuristic = heuristic
     # https://www.geeksforgeeks.org/min-heap-in-python/
     # used for min heap functions and syntax
     # create heap
@@ -221,7 +217,6 @@ def run_game(puzzle, search_type):
         # current node is the puzzle state we observe in this loop instance
         current_node = heappop(game)
 
-        # https://www.cherryservers.com/blog/how-to-reverse-a-list-in-python
         # used for tracing back the puzzle for solution path in order
         if current_node.value == goal_state:
             trace = current_node
@@ -253,11 +248,11 @@ def run_game(puzzle, search_type):
                 new_node = copy.deepcopy(board)
                 new_node.level = current_node.level + 1
                 if search_type == 1:
-                    new_node.hueristic = 0
+                    new_node.heuristic = 0
                 elif search_type == 2:
-                    new_node.hueristic = get_hueristic(new_node.value, 2)
+                    new_node.heuristic = get_heuristic(new_node.value, 2)
                 elif search_type == 3:
-                    new_node.hueristic = get_hueristic(new_node.value, 3)
+                    new_node.heuristic = get_heuristic(new_node.value, 3)
                 # adds node to queue
                 heappush(game, new_node)
 
