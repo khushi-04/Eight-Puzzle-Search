@@ -9,7 +9,7 @@ import time
 
 repeated_states = set()
 
-# all default puzzles are from the project instructions
+# default puzzles are from the project instructions or randomly generated from: https://deniz.co/8-puzzle-solver/
 goal_state = [[1,2,3],
               [4,5,6],
               [7,8,0]]
@@ -52,14 +52,15 @@ def print_puzzle(puzzle):
     print(np.array(puzzle))
 
 def main():
-    mode = input("Welcome to the 8-puzzle solver. Please type your preferred mode: '1' for default puzzle, '2' for custom puzzle" + "\n")    
+    # code outline used from the sample report from instructions for intro
+    mode = input("Welcome to the 8-puzzle solver. Please type your preferred mode: \n'1' for default puzzle \n'2' for custom puzzle\n")    
     
     if mode == "1": 
         # asks for difficulty of default puzzle -- good for testing 
-        difficulty = input("Please select the difficulty of the default puzzle: Type a number between 1-5, 1 being very easy and 5 being very hard: ")
+        difficulty = input("Please select the difficulty of the default puzzle: Type a number between 1-5, 1 being very easy and 5 being very hard:\n")
         while(int(difficulty) < 1 or int(difficulty) > 5):
             print("Please select a valid difficulty.")
-            difficulty = input("Please select the difficulty of the default puzzle: Type a number between 1-5, 1 being very easy and 5 being very hard: ")
+            difficulty = input("Please select the difficulty of the default puzzle: Type a number between 1-5, 1 being very easy and 5 being very hard:\n")
         print("You have selected...")
         if(difficulty == '1'):
             print("Very easy.")
@@ -79,7 +80,7 @@ def main():
     
     # build-a-bear (but a puzzle)
     else:
-        print("Please enter your puzzle, using 0 to stand for the blank tile! Make sure your puzzle is a valid 8-puzzle (it should have a valid solution).")
+        print("Please enter your puzzle, using 0 to stand for the blank tile. Make sure your puzzle is a valid 8-puzzle.")
         
         print("Enter the puzzle by row, seperating the numbers with a space and press enter to submit each row.")
 
@@ -96,7 +97,7 @@ def main():
             row_two[i] = int(row_two[i])
             row_three[i] = int(row_three[i])
         puzzle = [row_one, row_two, row_three]
-    type = input("Which algorithm would you like me to use? (1) for Uniform Cost Search, (2) for Misplaced Tile Heuristic, (3) for Manhattan Distance Heuristic")
+    type = input("Which algorithm would you like me to use? \n(1) for Uniform Cost Search \n(2) for Misplaced Tile Heuristic, \n(3) for Manhattan Distance Heuristic\n")
     if(type == "1"):
         run_game(puzzle, 1)
     elif(type == "2"):
@@ -106,6 +107,8 @@ def main():
     return
 
 # calculates hueristic for either misplaced or manhattan (specified by type)
+# https://algodaily.com/lessons/what-is-the-manhattan-distance
+# used to find out how to calculate manhattan distance
 def get_hueristic(puzzle, type):
     hueristic = 0
     if(type == 2):
@@ -135,6 +138,7 @@ def create_hash(puzzle):
     digit = hash.hexdigest()
     return(digit)
 
+# checks for repeated state
 def state_exists(puzzle):
     if create_hash(puzzle) in repeated_states:
         return True
@@ -143,6 +147,8 @@ def state_exists(puzzle):
 # custom expand function that adds all possible child nodes (all the possible ways empty tile could move)
 # https://www.geeksforgeeks.org/copy-python-deep-copy-shallow-copy/
 # used deep copy function to create the children
+# https://www.geeksforgeeks.org/python-program-to-swap-two-elements-in-a-list/
+# used reference for syntax of swapping two values
 def expand_node(current_node):
     row = 0
     column = 0
@@ -184,6 +190,7 @@ def run_game(puzzle, search_type):
     # to measure how long the search takes
     begin = time.perf_counter()
     
+    # getting the search type
     if search_type == 1:
         hueristic = 0
     elif search_type == 2:
@@ -191,24 +198,35 @@ def run_game(puzzle, search_type):
     else:
         hueristic = get_hueristic(puzzle,3)
 
+    # declaring variables, most of which are needed at the end
     nodes_expanded = 0
     max_queue = 0
     node = Node(puzzle)
     node.level = 0
     node.hueristic = hueristic
+    # https://www.geeksforgeeks.org/min-heap-in-python/
+    # used for min heap functions and syntax
+    # create heap
     game = []
     heappush(game,node)
 
     while game:
+        # checks if queue is empty -- game over
         if not game:
             print("Sadness. There is no solution to your 8-puzzle.")
             break
+        # checking for max queue size
         max_queue = max(len(game), max_queue)
+
+        # current node is the puzzle state we observe in this loop instance
         current_node = heappop(game)
+
+        # https://www.cherryservers.com/blog/how-to-reverse-a-list-in-python
+        # used for tracing back the puzzle for solution path in order
         if current_node.value == goal_state:
             trace = current_node
             trace_set = []
-            while trace.parent != None:
+            while trace != None:
                 trace_set.append(trace)
                 trace = trace.parent
             trace_set.reverse()
@@ -216,14 +234,19 @@ def run_game(puzzle, search_type):
             while(i < len(trace_set)):
                 print_puzzle(trace_set[i].value)
                 i += 1
+            
+            # prints all the stats and then breaks out of the loop
             print("YIPPEE! We found a solution to your 8-puzzle. \nSolution depth: " +  str(current_node.level) + "\n" + str(nodes_expanded) + " nodes expanded \nMax queue length: " + str(max_queue) + "\nThe search took "+ str(round(time.perf_counter() - begin, 3)) + " seconds " )
             break
         # print_puzzle(current_node.value)
+
+        # checks that it is not a repeated state, adds to repeated states, then calls expand
         if not state_exists(current_node.value):
             nodes_expanded += 1
             repeated_states.add(create_hash(current_node.value))            
             expand_node(current_node)
             
+        # goes through generated expanded children, calculates depth and heuristic
         boards = [current_node.board1, current_node.board2, current_node.board3, current_node.board4]
         for board in boards:
             if board is not None:
@@ -235,7 +258,7 @@ def run_game(puzzle, search_type):
                     new_node.hueristic = get_hueristic(new_node.value, 2)
                 elif search_type == 3:
                     new_node.hueristic = get_hueristic(new_node.value, 3)
-                
+                # adds node to queue
                 heappush(game, new_node)
 
 if __name__ == "__main__":
