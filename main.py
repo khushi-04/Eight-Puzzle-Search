@@ -36,6 +36,7 @@ class Node():
         self.value = value
         self.level = 0
         self.hueristic = 0
+        self.parent = None
         self.board1 = None
         self.board2 = None
         self.board3 = None
@@ -140,42 +141,48 @@ def state_exists(puzzle):
     return False
 
 # custom expand function that adds all possible child nodes (all the possible ways empty tile could move)
+# https://www.geeksforgeeks.org/copy-python-deep-copy-shallow-copy/
+# used deep copy function to create the children
 def expand_node(current_node):
     row = 0
     column = 0
     row, column = find_actual_pos(current_node.value, 0)
-    # 0 not in the very left column
+    # 0 not in the very left column, left
     if column > 0:
         left_node = copy.deepcopy(current_node.value)
         left_node[row][column], left_node[row][column-1] = left_node[row][column-1], left_node[row][column]
         if create_hash(left_node) not in repeated_states:
             current_node.board1 = Node(left_node)
+            current_node.board1.parent = current_node
 
-    # 0 not in very right column
+    # 0 not in very right column, right
     if column < 2:
         right_node = copy.deepcopy(current_node.value)
         right_node[row][column], right_node[row][column+1] = right_node[row][column+1], right_node[row][column]
         if create_hash(right_node) not in repeated_states:
             current_node.board2 = Node(right_node)
+            current_node.board2.parent = current_node
 
-    # 0 not in very top row
+    # 0 not in very top row, up
     if row > 0:
         top_node = copy.deepcopy(current_node.value)
         top_node[row][column], top_node[row-1][column] = top_node[row-1][column], top_node[row][column]
         if create_hash(top_node) not in repeated_states:
             current_node.board3 = Node(top_node)
+            current_node.board3.parent = current_node
 
-    # 0 not in very bottom row
+    # 0 not in very bottom row, down
     if row < 2:
         bottom_node = copy.deepcopy(current_node.value)
         bottom_node[row][column], bottom_node[row+1][column] = bottom_node[row+1][column], bottom_node[row][column]
         if create_hash(bottom_node) not in repeated_states:
             current_node.board4 = Node(bottom_node)
+            current_node.board4.parent = current_node
 
 def run_game(puzzle, search_type):
     # geeksforgeeks.org/python-measure-time-taken-by-program-to-execute/ 
     # to measure how long the search takes
-    begin = time.time()
+    begin = time.perf_counter()
     
     if search_type == 1:
         hueristic = 0
@@ -199,13 +206,19 @@ def run_game(puzzle, search_type):
         max_queue = max(len(game), max_queue)
         current_node = heappop(game)
         if current_node.value == goal_state:
-            print("YIPPEE! We found a solution to your 8-puzzle. \nSolution depth: " 
-                  +  str(current_node.level) + "\n" 
-                  + str(nodes_expanded) + " nodes expanded \nMax queue length: " + str(max_queue) + "\nThe search took "
-                  + str(round(time.time() - begin, 3)) 
-                  + " seconds " )
+            trace = current_node
+            trace_set = []
+            while trace.parent != None:
+                trace_set.append(trace)
+                trace = trace.parent
+            trace_set.reverse()
+            i = 0
+            while(i < len(trace_set)):
+                print_puzzle(trace_set[i].value)
+                i += 1
+            print("YIPPEE! We found a solution to your 8-puzzle. \nSolution depth: " +  str(current_node.level) + "\n" + str(nodes_expanded) + " nodes expanded \nMax queue length: " + str(max_queue) + "\nThe search took "+ str(round(time.perf_counter() - begin, 3)) + " seconds " )
             break
-        print_puzzle(current_node.value)
+        # print_puzzle(current_node.value)
         if not state_exists(current_node.value):
             nodes_expanded += 1
             repeated_states.add(create_hash(current_node.value))            
@@ -224,10 +237,6 @@ def run_game(puzzle, search_type):
                     new_node.hueristic = get_hueristic(new_node.value, 3)
                 
                 heappush(game, new_node)
-        
-
 
 if __name__ == "__main__":
     main()
-
-
