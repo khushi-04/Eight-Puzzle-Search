@@ -215,25 +215,27 @@ def run_game(puzzle, search_type):
         max_queue = max(len(game), max_queue)
 
         # current node is the puzzle state we observe in this loop instance
+
         current_node = heappop(game)
+        print("The best state to expand with a g(n) = " + str(current_node.level) + " and h(n) = " + str(current_node.heuristic) + " is...")
+        print_puzzle(current_node.value)
 
         # used for tracing back the puzzle for solution path in order
         if current_node.value == goal_state:
-            trace = current_node
-            trace_set = []
-            while trace != None:
-                trace_set.append(trace)
-                trace = trace.parent
-            trace_set.reverse()
-            i = 0
-            while(i < len(trace_set)):
-                print_puzzle(trace_set[i].value)
-                i += 1
+            # trace = current_node
+            # trace_set = []
+            # while trace != None:
+            #     trace_set.append(trace)
+            #     trace = trace.parent
+            # trace_set.reverse()
+            # i = 0
+            # while(i < len(trace_set)):
+            #     print_puzzle(trace_set[i].value)
+            #     i += 1
             
             # prints all the stats and then breaks out of the loop
-            print("YIPPEE! We found a solution to your 8-puzzle. \nSolution depth: " +  str(current_node.level) + "\n" + str(nodes_expanded) + " nodes expanded \nMax queue length: " + str(max_queue) + "\nThe search took "+ str(round(time.perf_counter() - begin, 3)) + " seconds " )
+            print("YIPPEE! We found a solution to your 8-puzzle. \nSolution depth: " +  str(current_node.level) + "\nNodes expanded: " + str(nodes_expanded) + "\nMax queue length: " +  str(max_queue) + "\nThe search took "+ str(round(time.perf_counter() - begin, 3)) + " seconds " )
             break
-        # print_puzzle(current_node.value)
 
         # checks that it is not a repeated state, adds to repeated states, then calls expand
         if not state_exists(current_node.value):
